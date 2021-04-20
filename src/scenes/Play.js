@@ -14,6 +14,7 @@ class Play extends Phaser.Scene {
     preload() {
         //load all art assets needed for scene
         this.load.image("starfield", './assets/starfield.png');
+        this.load.image("asteroids", './assets/asteroidsbackground.png');
         this.load.image("rocket", './assets/rocket.png');
         this.load.image("spaceship", './assets/spaceship.png');
         this.load.spritesheet("explosion", './assets/explosion.png', 
@@ -27,6 +28,13 @@ class Play extends Phaser.Scene {
             640, 
             480, 
             "starfield").setOrigin(0,0);
+        
+        //display asteroids (parallax foreground)
+        this.asteroids = this.add.tileSprite(0,
+            0,
+            640,
+            480,
+            "asteroids").setOrigin(0,0);
         
         //display rocket
         this.p1Rocket = new Rocket(this, 
@@ -177,6 +185,7 @@ class Play extends Phaser.Scene {
             } else { //if game is not over, update all game pieces
                 this.starfield.tilePositionX -= game.settings.spaceshipSpeed + 
                     Math.floor(game.settings.spaceshipSpeed / 2); //scale background scroll speed by spaceship flight speed
+                this.asteroids.tilePositionX -= game.settings.spaceshipSpeed * 3; //do the same for the parallax asteroids
                 this.p1Rocket.update();
                 this.ship1.update();
                 this.ship2.update();
