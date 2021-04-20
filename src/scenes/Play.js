@@ -5,6 +5,7 @@ class Play extends Phaser.Scene {
 
     init() {
         this.timer = 0.0; //timer for locking update() to 60ups
+        this.mils = 0.0; //tracks how long the game has been running in milliseconds
         this.p1ScoreBuffer = 0; //used to have score update incrementially
         this.frame = 1; //ticks every "frame", resets at 60 / every second
     }
@@ -121,7 +122,7 @@ class Play extends Phaser.Scene {
             scoreConfig);
         
         //initialize clock
-        this.clockDisplay = game.settings.gameTimer / 1000 - 1;
+        this.clockDisplay = game.settings.gameTimer / 1000;
 
         //display clock
         this.clockRight = this.add.text(game.config.width - borderUISize - borderPadding - 100, 
@@ -132,25 +133,22 @@ class Play extends Phaser.Scene {
         //GAME OVER flag
         this.gameOver = false;
         
-        //end game once time is over
+        //set up displays for when game ends
         scoreConfig.fixedWidth = 0;
-        this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
-            this.add.text(game.config.width / 2, 
-                game.config.height / 2, 
-                "GAME OVER", 
-                scoreConfig).setOrigin(0.5);
-            this.add.text(game.config.width / 2,
-                game.config.height / 2 + 64,
-                "Press (R) to Restart or ← for Menu", scoreConfig).setOrigin(0.5);
-            this.gameOver = true;
-
+        this.gameOverText = this.add.text(game.config.width / 2, 
+            game.config.height / 2, 
+            "", 
+            scoreConfig).setOrigin(0.5);
+        this.restartText = this.add.text(game.config.width / 2,
+            game.config.height / 2 + 64,
+            "", scoreConfig).setOrigin(0.5);
         
-        }, null, this);
     }
 
     update(time, delta) {
-        //tick timer with how long it has been since last update() in milliseconds
+        //tick timer and mils with how long it has been since last update() in milliseconds
         this.timer += delta;
+        this.mils += delta;
 
         //only act if enough time has passed since last update()
         //act multiple times if too much time has passed
@@ -162,6 +160,7 @@ class Play extends Phaser.Scene {
             //end the game if time has run out
             if(this.gameOver) {
                 this.p1Score += this.p1ScoreBuffer;
+                this.p1ScoreBuffer = 0;
                 this.scoreLeft.text = this.p1Score;
                 if(Phaser.Input.Keyboard.JustDown(keyR)) {
                     this.scene.restart();
@@ -187,6 +186,13 @@ class Play extends Phaser.Scene {
                 if(this.frame == 60) {
                     this.clockDisplay--;
                     this.clockRight.text = this.clockDisplay + "s";
+                }
+
+                //check to see if game is over, and end it if it is
+                if(this.mils >= game.settings.gameTimer) {
+                    this.gameOver = true;
+                    this.gameOverText.text = "GAME OVER";
+                    this.restartText.text = "Press (R) to Restart or ← for Menu";
                 }
             }
 
@@ -214,6 +220,8 @@ class Play extends Phaser.Scene {
     }
 
     //destroy ships by resetting them and playing destroy animation
+    //additionally, add the ship's score to the relevant player's score
+    //and add 2 seconds to the game clock.
     shipExplode(ship) {
         ship.alpha = 0;
 
@@ -227,6 +235,8 @@ class Play extends Phaser.Scene {
         });
 
         this.p1ScoreBuffer += ship.points;
+        game.settings.gameTimer += 2000;
+        this.clockDisplay += 2;
     }
 }
 

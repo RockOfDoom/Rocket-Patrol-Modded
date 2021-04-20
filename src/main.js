@@ -4,7 +4,7 @@
 //5 pts  - Score display updates incrementally (1pt per frame) rather than all at once for juice (in Play.js)
 //10 pts - Play timer is visible to player (in Play.js)
 //! 30 pts - Simultaneous two-player mode (in Menu.js, Play.js, & Rocket.js)
-//! 20 pts - Add time to clock for successful hits (in Play.js and Ship.js)
+//20 pts - Add time to clock for successful hits (in Play.js)
 //! 10 pts - Parallax scrolling (in Play.js)
 //5 pts - Ships reset at random heights and move at different speeds (in Play.js and Ship.js)
 //! 5 pts - Speed increases after 30 seconds
