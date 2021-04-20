@@ -38,20 +38,23 @@ class Play extends Phaser.Scene {
             borderUISize * 4, 
             "spaceship", 
             0, 
-            30).setOrigin(0, 0);
+            30,
+            2).setOrigin(0, 0);
         
         this.ship2 = new Ship(this, 
             game.config.width + borderUISize * 3, 
             borderUISize * 5 + borderPadding * 2, 
             "spaceship", 
             0, 
-            20).setOrigin(0, 0);
+            20,
+            1.5).setOrigin(0, 0);
         this.ship3 = new Ship(this, 
             game.config.width, 
             borderUISize * 6 + borderPadding * 4, 
             "spaceship", 
             0, 
-            10).setOrigin(0, 0);
+            10,
+            1).setOrigin(0, 0);
         
         //animation config
         this.anims.create({
