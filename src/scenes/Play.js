@@ -7,6 +7,9 @@ class Play extends Phaser.Scene {
         this.timer = 0.0; //timer for locking update() to 60ups
         this.mils = 0.0; //tracks how long the game has been running in milliseconds
         this.p1ScoreBuffer = 0; //used to have score update incrementially
+        if(game.settings.twoPlayers) {
+            this.p2ScoreBuffer = 0; //P2 version of score buffer
+        }
         this.frame = 1; //ticks every "frame", resets at 60 / every second
         this.speedUp = false; //becomes true when speed increases after 30 seconds
     }
@@ -147,6 +150,9 @@ class Play extends Phaser.Scene {
 
         //initialize score
         this.p1Score = 0;
+        if(game.settings.twoPlayers) {
+            this.p2Score = 0;
+        }
 
         //display score
         let scoreConfig = {
@@ -161,10 +167,27 @@ class Play extends Phaser.Scene {
             },
             fixedWidth: 100,
         }
-        this.scoreLeft = this.add.text(borderUISize + borderPadding, 
-            borderUISize + borderPadding * 2, 
-            this.p1Score, 
-            scoreConfig);
+        if(!game.settings.twoPlayers) { //1P score display
+            this.scoreLeft = this.add.text(borderUISize + borderPadding, 
+                borderUISize + borderPadding * 2, 
+                this.p1Score, 
+                scoreConfig);
+        }
+        else { //2P score display
+            scoreConfig.backgroundColor = "#00f2ff";
+            scoreConfig.color = "#000";
+            this.scoreLeft = this.add.text(borderUISize + borderPadding, 
+                borderUISize + borderPadding * 2, 
+                this.p1Score, 
+                scoreConfig);
+            scoreConfig.backgroundColor = "#f2ff00";
+            this.scoreRight = this.add.text(2 * (borderUISize + borderPadding) + 100, 
+                borderUISize + borderPadding * 2, 
+                this.p2Score, 
+                scoreConfig);
+            scoreConfig.backgroundColor = '#F3B141';
+            scoreConfig.color = '#843605';
+        }
         
         //initialize clock
         this.clockDisplay = game.settings.gameTimer / 1000;
@@ -218,6 +241,11 @@ class Play extends Phaser.Scene {
                 this.p1Score += this.p1ScoreBuffer;
                 this.p1ScoreBuffer = 0;
                 this.scoreLeft.text = this.p1Score;
+                if(game.settings.twoPlayers) {
+                    this.p2Score += this.p2ScoreBuffer;
+                    this.p2ScoreBuffer = 0;
+                    this.scoreRight.text = this.p1Score;
+                }
                 if(Phaser.Input.Keyboard.JustDown(keyR)) {
                     this.scene.restart();
                 }
@@ -241,6 +269,12 @@ class Play extends Phaser.Scene {
                     this.p1Score++;
                     this.p1ScoreBuffer--;
                     this.scoreLeft.text = this.p1Score;
+                }
+                //same for P2
+                if(game.settings.twoPlayers && this.p2ScoreBuffer > 0) {
+                    this.p2Score++;
+                    this.p2ScoreBuffer--;
+                    this.scoreRight.text = this.p2Score;
                 }
 
                 //if 30 seconds have passed, increase ship + background speed
@@ -280,14 +314,14 @@ class Play extends Phaser.Scene {
             rocket.y < ship.y + ship.height &&
             rocket.height + rocket.y > ship. y) {
                 rocket.reset();
-                this.shipExplode(ship);
+                this.shipExplode(rocket, ship);
             }
     }
 
     //destroy ships by resetting them and playing destroy animation
     //additionally, add the ship's score to the relevant player's score
     //and add 2 seconds to the game clock.
-    shipExplode(ship) {
+    shipExplode(rocket, ship) {
         ship.alpha = 0;
 
         let boom = this.add.sprite(ship.x, ship.y, "explosion").setOrigin(0, 0);
@@ -299,7 +333,14 @@ class Play extends Phaser.Scene {
             boom.destroy();
         });
 
-        this.p1ScoreBuffer += ship.points;
+        //give the points to the player who hit the ship
+        if(rocket == this.p1Rocket) {
+            this.p1ScoreBuffer += ship.points;
+        }
+        if(rocket == this.p2Rocket) {
+            this.p2ScoreBuffer += ship.points;
+        }
+
         game.settings.gameTimer += 2000;
         this.clockDisplay += 2;
     }
