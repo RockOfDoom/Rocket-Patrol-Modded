@@ -3,6 +3,11 @@ class Menu extends Phaser.Scene {
         super("menuScene");
     }
 
+    init() {
+        this.playerCountSelected = false;
+        this.twoP = false;
+    }
+
     preload() {
         //load audio
         this.load.audio('sfx_select', './assets/blip_select12.wav');
@@ -26,19 +31,23 @@ class Menu extends Phaser.Scene {
         }
 
         //show menu text
-        this.add.text(game.config.width / 2, 
-            game.config.height / 2 - borderUISize - borderPadding, 
+        this.rocketPatrolTitle = this.add.text(game.config.width / 2, 
+            game.config.height / 2 - 2*(borderUISize + borderPadding), 
             "ROCKET PATROL", 
             menuConfig).setOrigin(0.5);
-        this.add.text(game.config.width / 2, 
+        this.menuText1 = this.add.text(game.config.width / 2, 
+            game.config.height / 2 - (borderUISize + borderPadding), 
+            "", 
+            menuConfig).setOrigin(0.5);
+        this.menuText2 = this.add.text(game.config.width / 2, 
             game.config.height / 2, 
-            "Use ← → arrows to move & (F) to fire", 
+            "", 
             menuConfig).setOrigin(0.5);
         menuConfig.backgroundColor = '#00FF00';
         menuConfig.color = '#000';
-        this.add.text(game.config.width / 2,
-            game.config.height / 2 + borderUISize + borderPadding,
-            "Press ← for Novice or → for Expert", 
+        this.actionText = this.add.text(game.config.width / 2,
+            game.config.height / 2 + (borderUISize + borderPadding),
+            "Press ← for 1P or → for 2P", 
             menuConfig).setOrigin(0.5);
         
         //define keys
@@ -47,23 +56,75 @@ class Menu extends Phaser.Scene {
     }
 
     update() {
-        if(Phaser.Input.Keyboard.JustDown(keyLEFT)) {
-            //easy mode
-            game.settings = {
-                spaceshipSpeed: 3,
-                gameTimer: 60000
+        if(this.playerCountSelected) { //run this after the number of players has been selected
+            if(!this.twoP) { //run this if game is in one player mode
+                this.menuText1.text = "";
+                this.menuText2.text = "Use ← → arrows to move & (F) to fire";
+                this.actionText.text = "Press ← for Novice or → for Expert";
+                if(Phaser.Input.Keyboard.JustDown(keyLEFT)) {
+                    //easy mode
+                    game.settings = {
+                        spaceshipSpeed: 3,
+                        gameTimer: 60000,
+                        twoPlayers: this.twoP
+                    }
+                    this.sound.play('sfx_select');
+                    this.scene.start('playScene');
+                }
+                if(Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
+                    //hard mode
+                    game.settings = {
+                        spaceshipSpeed: 4,
+                        gameTimer: 45000,
+                        twoPlayers: this.twoP
+                    }
+                    this.sound.play('sfx_select');
+                    this.scene.start('playScene');
+                }
             }
-            this.sound.play('sfx_select');
-            this.scene.start('playScene');
+            else { //run this if game is in two player mode
+                this.menuText1.style.backgroundColor = "#00f2ff";
+                this.menuText1.style.color = "#000";
+                this.menuText1.text = "P1: (A)(D) keys to move & (W) to fire";
+                this.menuText2.style.backgroundColor = "#f2ff00";
+                this.menuText2.style.color = "#000";
+                this.menuText2.text = "P2: ← → arrows to move & ↑ to fire";
+                this.actionText.text = "Press ← for Novice or → for Expert";
+                if(Phaser.Input.Keyboard.JustDown(keyLEFT)) {
+                    //easy mode
+                    game.settings = {
+                        spaceshipSpeed: 3,
+                        gameTimer: 60000,
+                        twoPlayers: this.twoP
+                    }
+                    this.sound.play('sfx_select');
+                    this.scene.start('playScene');
+                }
+                if(Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
+                    //hard mode
+                    game.settings = {
+                        spaceshipSpeed: 4,
+                        gameTimer: 45000,
+                        twoPlayers: this.twoP
+                    }
+                    this.sound.play('sfx_select');
+                    this.scene.start('playScene');
+                }
+            }
         }
-        if(Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
-            //hard mode
-            game.settings = {
-                spaceshipSpeed: 4,
-                gameTimer: 45000
+        else { //run this before the number of players has been selected
+            if(Phaser.Input.Keyboard.JustDown(keyLEFT)) {
+                //1 player mode
+                this.twoP = false;
+                this.sound.play('sfx_select');
+                this.playerCountSelected = true;
             }
-            this.sound.play('sfx_select');
-            this.scene.start('playScene');
+            if(Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
+                //2 player mode
+                this.twoP = true;
+                this.sound.play('sfx_select');
+                this.playerCountSelected = true;
+            }
         }
     }
 }

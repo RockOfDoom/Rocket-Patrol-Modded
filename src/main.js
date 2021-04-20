@@ -6,8 +6,8 @@
 //! 30 pts - Simultaneous two-player mode (in Menu.js, Play.js, & Rocket.js)
 //20 pts - Add time to clock for successful hits (in Play.js)
 //10 pts - Parallax scrolling (in Play.js)
-//5 pts - Ships reset at random heights and move at different speeds (in Play.js and Ship.js)
-//5 pts - Speed increases after 30 seconds (in Play.js)
+//5 pts - Ships reset at random heights and can take a speed multiplier to modify each ship's speed individually (in Play.js and Ship.js)
+//5 pts - Speed of ships increase after 30 seconds (in Play.js)
 
 let config = {
     type: Phaser.AUTO,

@@ -15,7 +15,13 @@ class Play extends Phaser.Scene {
         //load all art assets needed for scene
         this.load.image("starfield", './assets/starfield.png');
         this.load.image("asteroids", './assets/asteroidsbackground.png');
-        this.load.image("rocket", './assets/rocket.png');
+        if(game.settings.twoPlayers) {
+            this.load.image("p1rocket", './assets/p1rocket.png');
+            this.load.image("p2rocket", './assets/p2rocket.png');
+        }
+        else {
+            this.load.image("rocket", './assets/rocket.png');
+        }
         this.load.image("spaceship", './assets/spaceship.png');
         this.load.spritesheet("explosion", './assets/explosion.png', 
             {frameWidth: 64, frameHeight: 32, startFrame:0, endFrame: 9});
@@ -35,12 +41,48 @@ class Play extends Phaser.Scene {
             640,
             480,
             "asteroids").setOrigin(0,0);
+
+        //configure user input
+        keyF = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
+        keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+        keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
+        keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
+        if(game.settings.twoPlayers) {
+            keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+            keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+            keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+            keyUP = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+        }
         
-        //display rocket
-        this.p1Rocket = new Rocket(this, 
+        //display rocket(s)
+        if(!game.settings.twoPlayers) { //1P rocket creation
+            this.p1Rocket = new Rocket(this, 
             game.config.width / 2, 
             game.config.height - borderUISize - borderPadding, 
-            "rocket").setOrigin(0.5, 0);
+            "rocket",
+            0,
+            keyLEFT,
+            keyRIGHT,
+            keyF).setOrigin(0.5, 0);
+        }
+        else { //2P rocket creation
+            this.p1Rocket = new Rocket(this, 
+                game.config.width / 2 - borderPadding, 
+                game.config.height - borderUISize - borderPadding, 
+                "p1rocket",
+                0,
+                keyA,
+                keyD,
+                keyW).setOrigin(0.5, 0);
+            this.p2Rocket = new Rocket(this, 
+                game.config.width / 2 + borderPadding, 
+                game.config.height - borderUISize - borderPadding, 
+                "p2rocket",
+                0,
+                keyLEFT,
+                keyRIGHT,
+                keyUP).setOrigin(0.5, 0);
+        }
         
         //display ships
         this.ship1 = new Ship(this, 
@@ -102,12 +144,6 @@ class Play extends Phaser.Scene {
             borderUISize, 
             game.config.height, 
             0xFFFFFF).setOrigin(0 ,0);
-        
-        //configure user input
-        keyF = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
-        keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
-        keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
-        keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
 
         //initialize score
         this.p1Score = 0;
@@ -170,6 +206,12 @@ class Play extends Phaser.Scene {
             this.checkCollision(this.p1Rocket, this.ship1);
             this.checkCollision(this.p1Rocket, this.ship2);
             this.checkCollision(this.p1Rocket, this.ship3);
+            //check p2 if they exist
+            if(game.settings.twoPlayers) {
+                this.checkCollision(this.p2Rocket, this.ship1);
+                this.checkCollision(this.p2Rocket, this.ship2);
+                this.checkCollision(this.p2Rocket, this.ship3);
+            }
 
             //end the game if time has run out
             if(this.gameOver) {
@@ -187,6 +229,9 @@ class Play extends Phaser.Scene {
                     Math.floor(game.settings.spaceshipSpeed / 2); //scale background scroll speed by spaceship flight speed
                 this.asteroids.tilePositionX -= game.settings.spaceshipSpeed * 3; //do the same for the parallax asteroids
                 this.p1Rocket.update();
+                if(game.settings.twoPlayers) {
+                    this.p2Rocket.update();
+                }
                 this.ship1.update();
                 this.ship2.update();
                 this.ship3.update();
