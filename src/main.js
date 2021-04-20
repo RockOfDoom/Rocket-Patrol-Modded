@@ -7,7 +7,7 @@
 //20 pts - Add time to clock for successful hits (in Play.js)
 //! 10 pts - Parallax scrolling (in Play.js)
 //5 pts - Ships reset at random heights and move at different speeds (in Play.js and Ship.js)
-//! 5 pts - Speed increases after 30 seconds
+//5 pts - Speed increases after 30 seconds (in Play.js)
 
 let config = {
     type: Phaser.AUTO,

@@ -8,6 +8,7 @@ class Play extends Phaser.Scene {
         this.mils = 0.0; //tracks how long the game has been running in milliseconds
         this.p1ScoreBuffer = 0; //used to have score update incrementially
         this.frame = 1; //ticks every "frame", resets at 60 / every second
+        this.speedUp = false; //becomes true when speed increases after 30 seconds
     }
 
     preload() {
@@ -156,6 +157,11 @@ class Play extends Phaser.Scene {
             if(this.frame > 60) {
                 this.frame = 1; //reset frame every second
             }
+            
+            //see if the rocket has hit any of the ships
+            this.checkCollision(this.p1Rocket, this.ship1);
+            this.checkCollision(this.p1Rocket, this.ship2);
+            this.checkCollision(this.p1Rocket, this.ship3);
 
             //end the game if time has run out
             if(this.gameOver) {
@@ -169,7 +175,8 @@ class Play extends Phaser.Scene {
                     this.scene.start("menuScene");
                 }
             } else { //if game is not over, update all game pieces
-                this.starfield.tilePositionX -= 4;
+                this.starfield.tilePositionX -= game.settings.spaceshipSpeed + 
+                    Math.floor(game.settings.spaceshipSpeed / 2); //scale background scroll speed by spaceship flight speed
                 this.p1Rocket.update();
                 this.ship1.update();
                 this.ship2.update();
@@ -182,11 +189,20 @@ class Play extends Phaser.Scene {
                     this.scoreLeft.text = this.p1Score;
                 }
 
+                //if 30 seconds have passed, increase ship + background speed
+                if(this.mils >= 30000 && !this.speedUp) {
+                    game.settings.spaceshipSpeed *= 1.5;
+                    this.ship1.movementSpeed *= 1.5;
+                    this.ship2.movementSpeed *= 1.5;
+                    this.ship3.movementSpeed *= 1.5;
+                    this.speedUp = true;
+                }
+
                 //tick clock
                 if(this.frame == 60) {
                     this.clockDisplay--;
-                    this.clockRight.text = this.clockDisplay + "s";
                 }
+                this.clockRight.text = this.clockDisplay + "s";
 
                 //check to see if game is over, and end it if it is
                 if(this.mils >= game.settings.gameTimer) {
@@ -195,11 +211,6 @@ class Play extends Phaser.Scene {
                     this.restartText.text = "Press (R) to Restart or ← for Menu";
                 }
             }
-
-            //see if the rocket has hit any of the ships
-            this.checkCollision(this.p1Rocket, this.ship1);
-            this.checkCollision(this.p1Rocket, this.ship2);
-            this.checkCollision(this.p1Rocket, this.ship3);
 
             //tick timer down once and frame up once
             this.timer -= 16.66666;
